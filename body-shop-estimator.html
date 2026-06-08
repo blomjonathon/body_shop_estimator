@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Estimate – New Central Auto Body</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f0f4f8;
+  color: #1a2744;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.site-header {
+  background: #1a2744;
+  color: white;
+  padding: 18px 24px;
+  text-align: center;
+}
+.site-header h1 { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.3px; }
+.site-header p  { color: #8fa4c8; font-size: 0.83rem; margin-top: 3px; }
+
+/* ── Progress bar ── */
+.progress-wrap {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.progress-steps {
+  display: flex;
+  max-width: 580px;
+  margin: 0 auto;
+}
+.prog-step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+.prog-step::before {
+  content: attr(data-num);
+  display: block;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 0.78rem;
+  line-height: 26px;
+  margin: 0 auto 4px;
+  position: relative; z-index: 1;
+  transition: background 0.25s, color 0.25s;
+}
+.prog-step::after {
+  content: '';
+  position: absolute;
+  top: 13px; left: 50%; right: -50%;
+  height: 2px;
+  background: #e2e8f0;
+  z-index: 0;
+  transition: background 0.25s;
+}
+.prog-step:last-child::after { display: none; }
+.prog-step.active::before  { background: #e85d04; color: white; }
+.prog-step.active          { color: #1a2744; }
+.prog-step.done::before    { background: #22c55e; color: white; content: '✓'; font-size: 0.7rem; }
+.prog-step.done::after     { background: #22c55e; }
+.prog-step.done            { color: #16a34a; }
+
+/* ── Main container ── */
+.main {
+  max-width: 720px;
+  margin: 28px auto 60px;
+  padding: 0 16px;
+}
+
+/* ── Step containers ── */
+.step { display: none; }
+.step.active { display: block; animation: fadeUp 0.22s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.step-title {
+  font-size: 1.25rem; font-weight: 800;
+  margin-bottom: 4px; color: #1a2744;
+}
+.step-sub {
+  font-size: 0.88rem; color: #64748b;
+  margin-bottom: 20px;
+}
+
+/* ── Card ── */
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
+  margin-bottom: 16px;
+}
+
+/* ── Vehicle selector ── */
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.vehicle-btn {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  padding: 22px 8px 16px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  font-size: 0.83rem; font-weight: 700;
+  color: #64748b;
+}
+.vehicle-btn:hover { border-color: #e85d04; color: #c2410c; transform: translateY(-2px); }
+.vehicle-btn.selected {
+  border-color: #e85d04; background: #fff5f0; color: #c2410c;
+  box-shadow: 0 0 0 3px rgba(232,93,4,0.15);
+}
+.vehicle-icon { font-size: 2.4rem; margin-bottom: 8px; display: block; line-height: 1; }
+
+/* ── Car diagram ── */
+.diagram-wrap {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.car-diagram { flex: 0 0 auto; }
+.car-svg { width: 210px; height: auto; display: block; }
+
+.panel-area {
+  cursor: pointer;
+  transition: fill 0.12s, opacity 0.12s;
+}
+.panel-area:hover { opacity: 0.75; }
+.panel-area.selected { fill: #e85d04 !important; }
+.panel-area.selected text { fill: white !important; }
+
+/* ── Panel list ── */
+.panel-list-wrap { flex: 1; min-width: 200px; }
+.panel-list-title {
+  font-size: 0.73rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: #94a3b8; margin-bottom: 10px;
+}
+.panel-empty {
+  color: #94a3b8; font-size: 0.88rem;
+  font-style: italic; padding: 8px 0;
+  line-height: 1.5;
+}
+.panel-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #fff5f0; border: 1px solid #fbd0b2;
+  border-radius: 20px; padding: 4px 10px 4px 9px;
+  font-size: 0.8rem; font-weight: 600; color: #c2410c;
+  margin: 3px 3px 3px 0;
+}
+.panel-tag button {
+  background: none; border: none; cursor: pointer;
+  color: #c2410c; font-size: 1rem; line-height: 1;
+  padding: 0; margin-left: 1px;
+  transition: color 0.1s;
+}
+.panel-tag button:hover { color: #7f1d1d; }
+
+.hint-text {
+  margin-top: 18px; font-size: 0.8rem; color: #94a3b8; line-height: 1.5;
+}
+.hint-text strong { color: #475569; display: block; margin-bottom: 2px; }
+
+/* ── Damage detail rows ── */
+.damage-row {
+  padding: 16px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.damage-row:first-child { padding-top: 0; }
+.damage-row:last-child  { border-bottom: none; padding-bottom: 0; }
+
+.damage-panel-name {
+  font-weight: 800; font-size: 0.93rem;
+  margin-bottom: 10px; color: #1a2744;
+  display: flex; align-items: center; gap: 8px;
+}
+.damage-fields { display: flex; gap: 12px; flex-wrap: wrap; }
+.field-group   { flex: 1; min-width: 130px; }
+.field-label {
+  font-size: 0.73rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  color: #94a3b8; margin-bottom: 6px;
+}
+
+select {
+  width: 100%;
+  padding: 9px 28px 9px 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  background: white;
+  color: #1a2744;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.15s;
+}
+select:focus { outline: none; border-color: #e85d04; }
+
+.severity-btns { display: flex; gap: 5px; }
+.sev-btn {
+  flex: 1; padding: 7px 4px;
+  border: 1.5px solid #e2e8f0; border-radius: 7px;
+  background: white; font-size: 0.77rem; font-weight: 700;
+  cursor: pointer; text-align: center; color: #64748b;
+  transition: all 0.12s;
+}
+.sev-btn:hover { border-color: #94a3b8; color: #1a2744; }
+.sev-btn.sel-light    { background: #fef9c3; border-color: #eab308; color: #713f12; }
+.sev-btn.sel-moderate { background: #fed7aa; border-color: #f97316; color: #9a3412; }
+.sev-btn.sel-severe   { background: #fecaca; border-color: #ef4444; color: #991b1b; }
+
+/* ── Estimate display ── */
+.estimate-hero {
+  background: linear-gradient(140deg, #1a2744 0%, #2d4070 100%);
+  border-radius: 14px; padding: 32px 24px;
+  text-align: center; margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(26,39,68,0.25);
+}
+.estimate-label {
+  font-size: 0.8rem; color: #8fa4cc;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 10px;
+}
+.estimate-range {
+  font-size: 3rem; font-weight: 900;
+  color: white; line-height: 1; letter-spacing: -1px;
+}
+.estimate-vehicle-tag {
+  display: inline-block;
+  background: rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 0.78rem;
+  color: #aac4e8;
+  margin-top: 10px;
+}
+.estimate-caveat {
+  font-size: 0.77rem; color: #6b85a8;
+  margin-top: 12px; line-height: 1.6;
+}
+
+/* ── Breakdown ── */
+.breakdown-title {
+  font-size: 0.73rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: #94a3b8; margin-bottom: 12px;
+}
+.breakdown-row {
+  display: flex; justify-content: space-between;
+  align-items: center; padding: 9px 0;
+  border-bottom: 1px solid #f1f5f9; font-size: 0.87rem;
+}
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-row .panel-label { color: #475569; }
+.breakdown-row .panel-amt   { font-weight: 700; color: #1a2744; white-space: nowrap; margin-left: 12px; }
+
+/* ── Lead form ── */
+.form-section-title {
+  font-size: 1rem; font-weight: 800; margin-bottom: 4px;
+}
+.form-section-sub {
+  font-size: 0.85rem; color: #64748b; margin-bottom: 20px; line-height: 1.5;
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-field { display: flex; flex-direction: column; gap: 5px; }
+.form-field.full { grid-column: 1 / -1; }
+.form-field label {
+  font-size: 0.73rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px; color: #64748b;
+}
+.form-field input,
+.form-field textarea,
+.form-field select.form-select {
+  padding: 10px 12px;
+  border: 1.5px solid #e2e8f0; border-radius: 8px;
+  font-size: 0.9rem; color: #1a2744; background: white;
+  background-image: none; width: 100%;
+  transition: border-color 0.15s;
+}
+.form-field select.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  cursor: pointer;
+}
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select.form-select:focus { outline: none; border-color: #e85d04; }
+.form-field textarea { resize: vertical; min-height: 80px; }
+
+/* ── Buttons ── */
+.btn-row {
+  display: flex; gap: 10px; margin-top: 22px;
+  justify-content: space-between; align-items: center;
+}
+.btn {
+  padding: 11px 26px; border-radius: 9px;
+  font-size: 0.92rem; font-weight: 700;
+  cursor: pointer; border: none;
+  transition: all 0.15s; white-space: nowrap;
+}
+.btn-primary {
+  background: #e85d04; color: white;
+  box-shadow: 0 2px 8px rgba(232,93,4,0.35);
+}
+.btn-primary:hover   { background: #c2410c; transform: translateY(-1px); }
+.btn-primary:active  { transform: none; }
+.btn-primary:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
+.btn-back {
+  background: transparent; color: #64748b;
+  border: 1.5px solid #e2e8f0; padding: 11px 18px;
+}
+.btn-back:hover { border-color: #94a3b8; color: #1a2744; }
+
+.btn-submit {
+  width: 100%; padding: 14px;
+  background: #e85d04; color: white;
+  border: none; border-radius: 10px;
+  font-size: 1rem; font-weight: 800;
+  cursor: pointer; margin-top: 20px;
+  box-shadow: 0 3px 12px rgba(232,93,4,0.35);
+  transition: all 0.15s;
+}
+.btn-submit:hover   { background: #c2410c; transform: translateY(-1px); }
+.btn-submit:active  { transform: none; }
+
+/* ── Success screen ── */
+.success-wrap { text-align: center; padding: 40px 20px; }
+.success-check {
+  width: 64px; height: 64px; background: #dcfce7;
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; margin: 0 auto 18px;
+  font-size: 1.8rem;
+}
+.success-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 10px; }
+.success-body  { color: #475569; font-size: 0.92rem; line-height: 1.7; }
+.success-cta {
+  margin-top: 28px; padding: 12px 32px;
+  background: #1a2744; color: white;
+  border: none; border-radius: 9px;
+  font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; transition: background 0.15s;
+}
+.success-cta:hover { background: #2d4070; }
+
+.disclaimer {
+  font-size: 0.73rem; color: #94a3b8;
+  text-align: center; margin-top: 14px; line-height: 1.6;
+}
+.back-link {
+  text-align: center; margin-top: 10px;
+}
+.back-link button {
+  background: none; border: none; color: #94a3b8;
+  font-size: 0.82rem; cursor: pointer; text-decoration: underline;
+}
+.back-link button:hover { color: #475569; }
+
+/* ── Tooltip ── */
+#panel-tooltip {
+  position: fixed;
+  background: #1a2744; color: white;
+  padding: 5px 11px; border-radius: 7px;
+  font-size: 0.78rem; font-weight: 600;
+  pointer-events: none; display: none;
+  z-index: 200; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  .vehicle-grid { gap: 8px; }
+  .vehicle-btn  { padding: 18px 6px 14px; }
+  .vehicle-icon { font-size: 2rem; }
+  .diagram-wrap { flex-direction: column; align-items: center; }
+  .panel-list-wrap { width: 100%; }
+  .form-grid { grid-template-columns: 1fr; }
+  .estimate-range { font-size: 2.4rem; }
+  .car-svg { width: 200px; }
+}
+</style>
+</head>
+<body>
+
+<div id="panel-tooltip"></div>
+
+<!-- ═══ HEADER ═══ -->
+<header class="site-header">
+  <h1>Free Estimate</h1>
+  <p>New Central Auto Body &nbsp;·&nbsp; Preliminary quote in under 2 minutes</p>
+</header>
+
+<!-- ═══ PROGRESS ═══ -->
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="prog-step active" data-num="1">Vehicle</div>
+    <div class="prog-step"        data-num="2">Panels</div>
+    <div class="prog-step"        data-num="3">Damage</div>
+    <div class="prog-step"        data-num="4">Estimate</div>
+  </div>
+</div>
+
+<main class="main">
+
+<!-- ══════════════════════════════════════
+     STEP 1 — Vehicle Type
+══════════════════════════════════════ -->
+<div class="step active" id="step1">
+  <div class="step-title">What type of vehicle?</div>
+  <div class="step-sub">Select the vehicle needing repair.</div>
+  <div class="card">
+    <div class="vehicle-grid">
+      <button class="vehicle-btn" onclick="selectVehicle(this,'car')">
+        <span class="vehicle-icon">🚗</span>Car / Sedan
+      </button>
+      <button class="vehicle-btn" onclick="selectVehicle(this,'truck')">
+        <span class="vehicle-icon">🛻</span>Truck / Pickup
+      </button>
+      <button class="vehicle-btn" onclick="selectVehicle(this,'suv')">
+        <span class="vehicle-icon">🚙</span>SUV / Crossover
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 2 — Panel Selection
+══════════════════════════════════════ -->
+<div class="step" id="step2">
+  <div class="step-title">Click the damaged panels</div>
+  <div class="step-sub">Tap every area of the vehicle that needs repair. You can select multiple.</div>
+  <div class="card">
+    <div class="diagram-wrap">
+
+      <!-- SVG Car Diagram (top-down view) -->
+      <div class="car-diagram">
+        <svg class="car-svg" viewBox="0 0 280 520" xmlns="http://www.w3.org/2000/svg" id="car-svg">
+          <defs>
+            <filter id="drop" x="-8%" y="-5%" width="116%" height="110%">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1a2744" flood-opacity="0.12"/>
+            </filter>
+            <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%"   stop-color="#c8d6e6"/>
+              <stop offset="50%"  stop-color="#dce8f4"/>
+              <stop offset="100%" stop-color="#c8d6e6"/>
+            </linearGradient>
+            <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="#b8d8f0"/>
+              <stop offset="100%" stop-color="#90c0e8"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Outer body silhouette (background, not clickable) -->
+          <path d="M 88,14 Q 140,6 192,14 L 218,42 L 238,80 L 240,168
+                   L 238,200 L 239,334 L 236,372 L 220,462
+                   Q 140,476 60,462 L 44,372 L 41,334 L 42,200
+                   L 40,168 L 42,80 L 62,42 Z"
+                fill="url(#bodyGrad)" stroke="#a8bcd0" stroke-width="1.5" filter="url(#drop)"/>
+
+          <!-- ── FRONT BUMPER ── -->
+          <polygon id="p-front-bumper" class="panel-area"
+            data-panel="Front Bumper"
+            points="88,14 192,14 210,42 70,42"
+            fill="#d0dce8" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('front-bumper','Front Bumper')"/>
+
+          <!-- ── HOOD ── -->
+          <polygon id="p-hood" class="panel-area"
+            data-panel="Hood"
+            points="70,42 210,42 206,168 74,168"
+            fill="#c8d8e8" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('hood','Hood')"/>
+
+          <!-- ── LEFT FRONT FENDER ── -->
+          <polygon id="p-lf-fender" class="panel-area"
+            data-panel="Left Front Fender"
+            points="42,80 70,42 74,168 40,155"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('lf-fender','Left Front Fender')"/>
+
+          <!-- ── RIGHT FRONT FENDER ── -->
+          <polygon id="p-rf-fender" class="panel-area"
+            data-panel="Right Front Fender"
+            points="238,80 210,42 206,168 240,155"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('rf-fender','Right Front Fender')"/>
+
+          <!-- ── WINDSHIELD ── -->
+          <polygon id="p-windshield" class="panel-area"
+            data-panel="Windshield"
+            points="74,168 206,168 206,198 74,198"
+            fill="url(#glassGrad)" stroke="#a0c0d8" stroke-width="1"
+            onclick="togglePanel('windshield','Windshield')"/>
+
+          <!-- ── ROOF ── -->
+          <polygon id="p-roof" class="panel-area"
+            data-panel="Roof"
+            points="74,198 206,198 206,334 74,334"
+            fill="#ccd8e6" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('roof','Roof')"/>
+
+          <!-- ── LEFT FRONT DOOR ── -->
+          <polygon id="p-lf-door" class="panel-area"
+            data-panel="Left Front Door"
+            points="40,200 74,200 74,268 40,268"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('lf-door','Left Front Door')"/>
+
+          <!-- ── RIGHT FRONT DOOR ── -->
+          <polygon id="p-rf-door" class="panel-area"
+            data-panel="Right Front Door"
+            points="206,200 240,200 240,268 206,268"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('rf-door','Right Front Door')"/>
+
+          <!-- ── LEFT REAR DOOR ── -->
+          <polygon id="p-lr-door" class="panel-area"
+            data-panel="Left Rear Door"
+            points="40,268 74,268 74,334 40,334"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('lr-door','Left Rear Door')"/>
+
+          <!-- ── RIGHT REAR DOOR ── -->
+          <polygon id="p-rr-door" class="panel-area"
+            data-panel="Right Rear Door"
+            points="206,268 240,268 240,334 206,334"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('rr-door','Right Rear Door')"/>
+
+          <!-- ── REAR WINDOW ── -->
+          <polygon id="p-rear-window" class="panel-area"
+            data-panel="Rear Window"
+            points="74,334 206,334 206,362 74,362"
+            fill="url(#glassGrad)" stroke="#a0c0d8" stroke-width="1"
+            onclick="togglePanel('rear-window','Rear Window')"/>
+
+          <!-- ── TRUNK / TAILGATE ── -->
+          <polygon id="p-trunk" class="panel-area"
+            data-panel="Trunk / Tailgate"
+            points="74,362 206,362 202,460 78,460"
+            fill="#c8d8e8" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('trunk','Trunk / Tailgate')"/>
+
+          <!-- ── LEFT REAR QUARTER PANEL ── -->
+          <polygon id="p-lr-quarter" class="panel-area"
+            data-panel="Left Rear Quarter"
+            points="40,334 74,334 78,460 43,446"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('lr-quarter','Left Rear Quarter')"/>
+
+          <!-- ── RIGHT REAR QUARTER PANEL ── -->
+          <polygon id="p-rr-quarter" class="panel-area"
+            data-panel="Right Rear Quarter"
+            points="206,334 240,334 237,446 202,460"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('rr-quarter','Right Rear Quarter')"/>
+
+          <!-- ── REAR BUMPER ── -->
+          <polygon id="p-rear-bumper" class="panel-area"
+            data-panel="Rear Bumper"
+            points="78,460 202,460 192,476 88,476"
+            fill="#d0dce8" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('rear-bumper','Rear Bumper')"/>
+
+          <!-- Panel labels -->
+          <g font-family="sans-serif" fill="#7090a8" pointer-events="none">
+            <text x="140" y="31"  text-anchor="middle" font-size="8.5" font-weight="600">FRONT BUMPER</text>
+            <text x="140" y="112" text-anchor="middle" font-size="9"   font-weight="600">HOOD</text>
+            <text x="54"  y="112" text-anchor="middle" font-size="7"   transform="rotate(-6,54,112)">L FENDER</text>
+            <text x="226" y="112" text-anchor="middle" font-size="7"   transform="rotate(6,226,112)">R FENDER</text>
+            <text x="140" y="187" text-anchor="middle" font-size="8">WINDSHIELD</text>
+            <text x="140" y="270" text-anchor="middle" font-size="9"   font-weight="600">ROOF</text>
+            <text x="55"  y="238" text-anchor="middle" font-size="6.5">LF DOOR</text>
+            <text x="225" y="238" text-anchor="middle" font-size="6.5">RF DOOR</text>
+            <text x="55"  y="305" text-anchor="middle" font-size="6.5">LR DOOR</text>
+            <text x="225" y="305" text-anchor="middle" font-size="6.5">RR DOOR</text>
+            <text x="140" y="352" text-anchor="middle" font-size="8">REAR WINDOW</text>
+            <text x="140" y="415" text-anchor="middle" font-size="9"   font-weight="600">TRUNK</text>
+            <text x="54"  y="405" text-anchor="middle" font-size="6.5">LR QTR</text>
+            <text x="226" y="405" text-anchor="middle" font-size="6.5">RR QTR</text>
+            <text x="140" y="471" text-anchor="middle" font-size="8.5" font-weight="600">REAR BUMPER</text>
+          </g>
+
+          <!-- Direction indicators -->
+          <text x="140" y="7"   font-family="sans-serif" text-anchor="middle" font-size="8" fill="#b0c4d8">▼ FRONT</text>
+          <text x="140" y="500" font-family="sans-serif" text-anchor="middle" font-size="8" fill="#b0c4d8">▲ REAR</text>
+        </svg>
+      </div>
+
+      <!-- Selected panel list -->
+      <div class="panel-list-wrap">
+        <div class="panel-list-title">Selected Panels</div>
+        <div id="panel-tag-list">
+          <div class="panel-empty" id="panel-empty-msg">
+            Tap a panel on the diagram to mark it as damaged.
+          </div>
+        </div>
+        <div class="hint-text">
+          <strong>Not sure which panel?</strong>
+          Hover over the diagram to see panel names, then tap to select.
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" id="step2-next" disabled onclick="goStep(3)">
+        Next: Describe Damage →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 3 — Damage Details
+══════════════════════════════════════ -->
+<div class="step" id="step3">
+  <div class="step-title">Describe the damage</div>
+  <div class="step-sub">For each panel, choose damage type and how severe it is.</div>
+  <div class="card">
+    <div id="damage-rows"></div>
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" onclick="calcAndShow()">Get My Estimate →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 5 — Estimate + Lead Form
+══════════════════════════════════════ -->
+<div class="step" id="step5">
+
+  <div class="estimate-hero">
+    <div class="estimate-label">Preliminary Estimate</div>
+    <div class="estimate-range" id="est-range">—</div>
+    <div id="est-vehicle-tag" class="estimate-vehicle-tag"></div>
+    <div class="estimate-caveat">
+      Based on the damage details you provided.<br>
+      Final pricing is confirmed after a shop inspection.
+    </div>
+  </div>
+
+  <div class="card" id="breakdown-card">
+    <div class="breakdown-title">Estimate Breakdown</div>
+    <div id="breakdown-rows"></div>
+  </div>
+
+  <div class="card">
+    <div class="form-section-title">Send me this estimate &amp; get scheduled</div>
+    <div class="form-section-sub">
+      Fill in your info and a team member will reach out to confirm your estimate and book your appointment — usually within 1 business day.
+    </div>
+
+    <form id="lead-form" onsubmit="submitLead(event)">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>First Name *</label>
+          <input type="text" name="first_name" required placeholder="Jane">
+        </div>
+        <div class="form-field">
+          <label>Last Name *</label>
+          <input type="text" name="last_name" required placeholder="Smith">
+        </div>
+        <div class="form-field">
+          <label>Phone Number *</label>
+          <input type="tel" name="phone" required placeholder="(555) 000-0000">
+        </div>
+        <div class="form-field">
+          <label>Email Address</label>
+          <input type="email" name="email" placeholder="you@email.com">
+        </div>
+        <div class="form-field full">
+          <label>Vehicle — Year, Make &amp; Model *</label>
+          <input type="text" name="vehicle" required placeholder="e.g. 2021 Toyota Camry LE">
+        </div>
+        <div class="form-field full">
+          <label>Best time to reach you</label>
+          <select name="contact_time" class="form-select">
+            <option value="">No preference</option>
+            <option>Morning (8am – 12pm)</option>
+            <option>Afternoon (12pm – 5pm)</option>
+            <option>Evening (5pm – 7pm)</option>
+          </select>
+        </div>
+        <div class="form-field full">
+          <label>Additional notes</label>
+          <textarea name="notes" placeholder="Anything else we should know? (prior repairs, insurance claim, timeframe, etc.)"></textarea>
+        </div>
+      </div>
+
+      <!-- Hidden fields — auto-populated before submit -->
+      <input type="hidden" name="_subject"       id="hd-subject">
+      <input type="hidden" name="vehicle_type"   id="hd-vtype">
+      <input type="hidden" name="estimate_range" id="hd-estimate">
+      <input type="hidden" name="panels_damaged" id="hd-panels">
+
+      <button type="submit" class="btn-submit" id="submit-btn">📩&nbsp; Send My Estimate Request</button>
+
+      <div id="form-error" style="display:none; margin-top:12px; padding:12px 16px;
+           background:#fef2f2; border:1px solid #fecaca; border-radius:8px;
+           font-size:0.85rem; color:#991b1b;">
+        Something went wrong sending your request. Please try again, or call us directly.
+      </div>
+    </form>
+
+    <p class="disclaimer">
+      Your info is kept private and only used to follow up on your estimate request.<br>
+      By submitting you agree to be contacted by New Central Auto Body.
+    </p>
+  </div>
+
+  <div class="back-link">
+    <button onclick="goStep(3)">← Go back and edit damage details</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 6 — Success
+══════════════════════════════════════ -->
+<div class="step" id="step6">
+  <div class="card">
+    <div class="success-wrap">
+      <div class="success-check">✅</div>
+      <div class="success-title">Request Sent!</div>
+      <div class="success-body">
+        Thanks! A member of our team at <strong>New Central Auto Body</strong> will reach out
+        within 1 business day to confirm your estimate and get you scheduled.
+        <br><br>
+        <span style="color:#94a3b8;font-size:0.83rem;">You can also call us directly if you prefer to speak with someone right away.</span>
+      </div>
+      <button class="success-cta" onclick="resetAll()">Start Another Estimate</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+// ──────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────
+let selectedVehicle = null;
+let selectedPanels  = {}; // { id: { name, type, severity } }
+let estimate        = { min: 0, max: 0 };
+
+// ──────────────────────────────────────────
+// PRICING TABLES
+// ──────────────────────────────────────────
+const PRICES = {
+  dent: {
+    light:    { min: 150,  max: 400  },
+    moderate: { min: 400,  max: 950  },
+    severe:   { min: 950,  max: 2200 }
+  },
+  paint: {
+    light:    { min: 200,  max: 500  },
+    moderate: { min: 500,  max: 1200 },
+    severe:   { min: 1200, max: 2800 }
+  },
+  collision: {
+    light:    { min: 600,  max: 1500 },
+    moderate: { min: 1500, max: 3500 },
+    severe:   { min: 3500, max: 8000 }
+  },
+  glass_chip:    { min: 99,  max: 250 },
+  glass_replace: { min: 350, max: 900 },
+  rear_glass:    { min: 250, max: 550 }
+};
+
+// Large panels get 1.3× price; bumpers get 0.8×
+const LARGE  = new Set(['hood','roof','trunk']);
+const SMALL  = new Set(['front-bumper','rear-bumper']);
+const GLASS  = new Set(['windshield','rear-window']);
+
+// Vehicle size multiplier
+const VMULT  = { car: 1.0, truck: 1.2, suv: 1.15 };
+
+// ──────────────────────────────────────────
+// NAVIGATION
+// ──────────────────────────────────────────
+function goStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+
+  document.querySelectorAll('.prog-step').forEach((el, i) => {
+    el.classList.remove('active','done');
+    if      (i + 1 <  n) el.classList.add('done');
+    else if (i + 1 == n) el.classList.add('active');
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (n === 3) buildDamageRows();
+}
+
+// ──────────────────────────────────────────
+// STEP 1 — Vehicle selection
+// ──────────────────────────────────────────
+function selectVehicle(btn, type) {
+  document.querySelectorAll('.vehicle-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedVehicle = type;
+  setTimeout(() => goStep(2), 280);
+}
+
+// ──────────────────────────────────────────
+// STEP 2 — Panel selection
+// ──────────────────────────────────────────
+function togglePanel(id, name) {
+  if (selectedPanels[id]) {
+    delete selectedPanels[id];
+    document.getElementById('p-' + id).classList.remove('selected');
+  } else {
+    const isGlass = GLASS.has(id);
+    selectedPanels[id] = {
+      name,
+      type:     isGlass ? 'glass_replace' : 'collision',
+      severity: isGlass ? null : 'moderate'
+    };
+    document.getElementById('p-' + id).classList.add('selected');
+  }
+  renderTags();
+  const hasAny = Object.keys(selectedPanels).length > 0;
+  document.getElementById('step2-next').disabled = !hasAny;
+}
+
+function removePanel(id) {
+  delete selectedPanels[id];
+  const el = document.getElementById('p-' + id);
+  if (el) el.classList.remove('selected');
+  renderTags();
+  document.getElementById('step2-next').disabled = Object.keys(selectedPanels).length === 0;
+}
+
+function renderTags() {
+  const list   = document.getElementById('panel-tag-list');
+  const empty  = document.getElementById('panel-empty-msg');
+  const keys   = Object.keys(selectedPanels);
+
+  // remove existing tags (not the empty message)
+  list.querySelectorAll('.panel-tag').forEach(t => t.remove());
+
+  if (keys.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  keys.forEach(id => {
+    const tag = document.createElement('span');
+    tag.className = 'panel-tag';
+    tag.innerHTML = `${selectedPanels[id].name}
+      <button type="button" title="Remove" onclick="removePanel('${id}')">×</button>`;
+    list.appendChild(tag);
+  });
+}
+
+// ──────────────────────────────────────────
+// STEP 3 — Damage rows
+// ──────────────────────────────────────────
+function buildDamageRows() {
+  const container = document.getElementById('damage-rows');
+  container.innerHTML = '';
+
+  Object.entries(selectedPanels).forEach(([id, panel]) => {
+    const isGlass = GLASS.has(id) || (panel.type && panel.type.startsWith('glass'));
+    const row = document.createElement('div');
+    row.className = 'damage-row';
+
+    const typeOpts = isGlass
+      ? `<option value="glass_chip"    ${panel.type==='glass_chip'   ?'selected':''}>Chip / Crack Repair</option>
+         <option value="glass_replace" ${panel.type==='glass_replace'?'selected':''}>Full Replacement</option>`
+      : `<option value="dent"      ${panel.type==='dent'     ?'selected':''}>Dent / Ding</option>
+         <option value="paint"     ${panel.type==='paint'    ?'selected':''}>Paint &amp; Scratch</option>
+         <option value="collision" ${panel.type==='collision'?'selected':''}>Collision Damage</option>`;
+
+    const sevHTML = isGlass ? '' : `
+      <div class="field-group">
+        <div class="field-label">Severity</div>
+        <div class="severity-btns">
+          <button type="button" class="sev-btn ${panel.severity==='light'   ?'sel-light'   :''}" onclick="setSev('${id}','light',this)">Light</button>
+          <button type="button" class="sev-btn ${panel.severity==='moderate'?'sel-moderate':''}" onclick="setSev('${id}','moderate',this)">Moderate</button>
+          <button type="button" class="sev-btn ${panel.severity==='severe'  ?'sel-severe'  :''}" onclick="setSev('${id}','severe',this)">Severe</button>
+        </div>
+      </div>`;
+
+    row.innerHTML = `
+      <div class="damage-panel-name">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
+              background:#e85d04;margin-right:2px;flex-shrink:0;"></span>
+        ${panel.name}
+      </div>
+      <div class="damage-fields">
+        <div class="field-group">
+          <div class="field-label">Damage Type</div>
+          <select onchange="setType('${id}',this.value,this)">${typeOpts}</select>
+        </div>
+        ${sevHTML}
+      </div>`;
+    container.appendChild(row);
+  });
+}
+
+function setType(id, value, el) {
+  selectedPanels[id].type = value;
+  const isGlass = value.startsWith('glass');
+  const sevGroup = el.closest('.damage-fields').querySelector('.severity-btns');
+  if (sevGroup) {
+    sevGroup.closest('.field-group').style.display = isGlass ? 'none' : '';
+  }
+  if (isGlass) selectedPanels[id].severity = null;
+}
+
+function setSev(id, level, btn) {
+  selectedPanels[id].severity = level;
+  const allBtns = btn.closest('.severity-btns').querySelectorAll('.sev-btn');
+  allBtns.forEach(b => b.classList.remove('sel-light','sel-moderate','sel-severe'));
+  btn.classList.add('sel-' + level);
+}
+
+// ──────────────────────────────────────────
+// ESTIMATE CALCULATION
+// ──────────────────────────────────────────
+function calcAndShow() {
+  const vmult = VMULT[selectedVehicle] || 1.0;
+  const vLabel = { car:'Car / Sedan', truck:'Truck / Pickup', suv:'SUV / Crossover' }[selectedVehicle];
+  let totalMin = 0, totalMax = 0;
+  const rows = [];
+
+  Object.entries(selectedPanels).forEach(([id, panel]) => {
+    let pmin = 0, pmax = 0;
+
+    if (panel.type === 'glass_chip') {
+      pmin = PRICES.glass_chip.min; pmax = PRICES.glass_chip.max;
+    } else if (panel.type === 'glass_replace') {
+      const k = id === 'windshield' ? 'glass_replace' : 'rear_glass';
+      pmin = PRICES[k].min; pmax = PRICES[k].max;
+    } else {
+      const p = PRICES[panel.type][panel.severity];
+      pmin = p.min; pmax = p.max;
+      if (LARGE.has(id)) { pmin *= 1.3; pmax *= 1.3; }
+      if (SMALL.has(id)) { pmin *= 0.8; pmax *= 0.8; }
+    }
+
+    pmin = Math.round(pmin * vmult);
+    pmax = Math.round(pmax * vmult);
+    totalMin += pmin;
+    totalMax += pmax;
+
+    const typeLabel = {
+      dent:'Dent / Ding', paint:'Paint &amp; Scratch', collision:'Collision',
+      glass_chip:'Glass Chip Repair', glass_replace:'Glass Replacement', rear_glass:'Glass Replacement'
+    }[panel.type] || panel.type;
+    const sevLabel = panel.severity
+      ? ` · ${panel.severity.charAt(0).toUpperCase()+panel.severity.slice(1)}`
+      : '';
+
+    rows.push({
+      label: `${panel.name} — ${typeLabel}${sevLabel}`,
+      range: `$${pmin.toLocaleString()} – $${pmax.toLocaleString()}`
+    });
+  });
+
+  estimate = { min: totalMin, max: totalMax };
+  document.getElementById('est-range').textContent =
+    `$${totalMin.toLocaleString()} – $${totalMax.toLocaleString()}`;
+  document.getElementById('est-vehicle-tag').textContent = vLabel || '';
+
+  const bRows = document.getElementById('breakdown-rows');
+  bRows.innerHTML = '';
+  rows.forEach(r => {
+    const d = document.createElement('div');
+    d.className = 'breakdown-row';
+    d.innerHTML = `<span class="panel-label">${r.label}</span>
+                   <span class="panel-amt">${r.range}</span>`;
+    bRows.appendChild(d);
+  });
+
+  goStep(5);
+}
+
+// ──────────────────────────────────────────
+// ──────────────────────────────────────────
+// EMAILJS CONFIGURATION
+// ──────────────────────────────────────────
+//
+// SETUP (5 minutes, free up to 200 emails/month):
+//
+//  1. Sign up at https://www.emailjs.com
+//
+//  2. Add an Email Service:
+//     Dashboard > Email Services > Add New Service
+//     Connect Gmail (or whatever your shop email uses).
+//     Copy the Service ID shown after saving.
+//
+//  3. Create an Email Template:
+//     Dashboard > Email Templates > Create New Template
+//     Set "To Email" to: jon@newcentralauto.com
+//     Paste the body below into the template, then Save.
+//     Copy the Template ID.
+//
+//     ── TEMPLATE BODY ────────────────────────────────────
+//     Subject: New Estimate Request -- {{estimate_range}}
+//
+//     NEW BODY SHOP ESTIMATE REQUEST
+//     ================================
+//     Name:    {{first_name}} {{last_name}}
+//     Phone:   {{phone}}
+//     Email:   {{email}}
+//     Best time to reach: {{contact_time}}
+//
+//     VEHICLE
+//     {{vehicle}}  ({{vehicle_type}})
+//
+//     DAMAGE & ESTIMATE
+//     Estimate Range: {{estimate_range}}
+//
+//     Panels / Damage:
+//     {{panels_damaged}}
+//
+//     NOTES
+//     {{notes}}
+//     ── END TEMPLATE ─────────────────────────────────────
+//
+//  4. Get your Public Key:
+//     Dashboard > Account > General > Public Key
+//
+//  5. Paste all three values into the constants below.
+//
+const EMAILJS_SERVICE_ID  = 'service_89cwa3b';   // e.g. 'service_abc123'
+const EMAILJS_TEMPLATE_ID = 'template_o872tw5';  // e.g. 'template_xyz789'
+const EMAILJS_PUBLIC_KEY  = 'Vx_4O--0BTnpcGQRb';   // e.g. 'aBcDeFgH1234567'
+
+// Initialize EmailJS once
+if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+}
+
+async function submitLead(e) {
+  e.preventDefault();
+
+  if (EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID') {
+    alert('Almost there! Paste your EmailJS Service ID, Template ID, and Public Key into the three config constants in the script. See the setup comments above them.');
+    return;
+  }
+
+  const form   = e.target;
+  const btn    = document.getElementById('submit-btn');
+  const errBox = document.getElementById('form-error');
+  errBox.style.display = 'none';
+
+  // Populate hidden fields so EmailJS picks them up as template variables
+  const panelSummary = Object.values(selectedPanels)
+    .map(p => '- ' + p.name + '  (' + p.type.replace(/_/g,' ') + (p.severity ? ', ' + p.severity : '') + ')')
+    .join('\n');
+  const vLabel = { car:'Car / Sedan', truck:'Truck / Pickup', suv:'SUV / Crossover' }[selectedVehicle] || selectedVehicle;
+  const estStr = '$' + estimate.min.toLocaleString() + ' - $' + estimate.max.toLocaleString();
+
+  document.getElementById('hd-subject').value  = 'New Estimate Request -- ' + estStr;
+  document.getElementById('hd-vtype').value    = vLabel;
+  document.getElementById('hd-estimate').value = estStr;
+  document.getElementById('hd-panels').value   = panelSummary || '(none listed)';
+
+  btn.disabled    = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    await emailjs.sendForm(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, form);
+    goStep(6);
+  } catch (err) {
+    console.error('EmailJS error:', err);
+    errBox.style.display = 'block';
+    btn.disabled    = false;
+    btn.textContent = '📩  Send My Estimate Request';
+  }
+}
+
+// ──────────────────────────────────────────
+// RESET
+// ──────────────────────────────────────────
+function resetAll() {
+  selectedVehicle = null;
+  selectedPanels  = {};
+  estimate        = { min: 0, max: 0 };
+
+  document.querySelectorAll('.vehicle-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.panel-area').forEach(p => p.classList.remove('selected'));
+  document.getElementById('panel-tag-list').querySelectorAll('.panel-tag').forEach(t => t.remove());
+  document.getElementById('panel-empty-msg').style.display = 'block';
+  document.getElementById('step2-next').disabled = true;
+  document.getElementById('lead-form').reset();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = false;
+  btn.textContent = '📩  Send My Estimate Request';
+  document.getElementById('form-error').style.display = 'none';
+
+  goStep(1);
+}
+
+// ──────────────────────────────────────────
+// TOOLTIP
+// ──────────────────────────────────────────
+const tip = document.getElementById('panel-tooltip');
+document.querySelectorAll('.panel-area').forEach(p => {
+  p.addEventListener('mousemove', e => {
+    tip.textContent = p.dataset.panel;
+    tip.style.display = 'block';
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top  = (e.clientY - 32) + 'px';
+  });
+  p.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+});
+</script>
+</body>
+</htm
+</script>
+</body>
+</html>
