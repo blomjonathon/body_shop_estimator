@@ -222,6 +222,19 @@ select {
 }
 select:focus { outline: none; border-color: #e85d04; }
 
+input[type=text] {
+  width: 100%; padding: 9px 10px;
+  border: 1.5px solid #e2e8f0; border-radius: 8px;
+  font-size: 0.88rem; background: white; color: #1a2744;
+  transition: border-color 0.15s; box-sizing: border-box;
+}
+input[type=text]:focus { outline: none; border-color: #e85d04; }
+input[type=text]::placeholder { color: #94a3b8; }
+
+.vehicle-info { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
+.vehicle-info.visible { display: block; animation: fadeIn 0.25s ease; }
+.vinfo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
 .severity-btns { display: flex; gap: 5px; }
 .sev-btn {
   flex: 1; padding: 7px 4px;
@@ -233,7 +246,6 @@ select:focus { outline: none; border-color: #e85d04; }
 .sev-btn:hover { border-color: #94a3b8; color: #1a2744; }
 .sev-btn.sel-light    { background: #fef9c3; border-color: #eab308; color: #713f12; }
 .sev-btn.sel-moderate { background: #fed7aa; border-color: #f97316; color: #9a3412; }
-.sev-btn.sel-severe   { background: #fecaca; border-color: #ef4444; color: #991b1b; }
 
 /* ── Estimate display ── */
 .estimate-hero {
@@ -402,7 +414,8 @@ select:focus { outline: none; border-color: #e85d04; }
   .vehicle-icon { font-size: 2rem; }
   .diagram-wrap { flex-direction: column; align-items: center; }
   .panel-list-wrap { width: 100%; }
-  .form-grid { grid-template-columns: 1fr; }
+  .form-grid  { grid-template-columns: 1fr; }
+  .vinfo-grid { grid-template-columns: 1fr; }
   .estimate-range { font-size: 2.4rem; }
   .car-svg { width: 400px; }
 }
@@ -435,7 +448,7 @@ select:focus { outline: none; border-color: #e85d04; }
 ══════════════════════════════════════ -->
 <div class="step active" id="step1">
   <div class="step-title">What type of vehicle?</div>
-  <div class="step-sub">Select the vehicle needing repair.</div>
+  <div class="step-sub">Select your vehicle type, then enter the year, make, and model.</div>
   <div class="card">
     <div class="vehicle-grid">
       <button class="vehicle-btn" onclick="selectVehicle(this,'car')">
@@ -447,6 +460,63 @@ select:focus { outline: none; border-color: #e85d04; }
       <button class="vehicle-btn" onclick="selectVehicle(this,'suv')">
         <span class="vehicle-icon">🚙</span>SUV / Crossover
       </button>
+    </div>
+    <div class="vehicle-info" id="vehicle-info">
+      <div class="vinfo-grid">
+        <div class="field-group">
+          <div class="field-label">Year</div>
+          <select id="sel-year" onchange="onVehicleInfoChange()">
+            <option value="">Select year…</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Make</div>
+          <select id="sel-make" onchange="onMakeChange(this.value)">
+            <option value="">Select make…</option>
+            <option>Acura</option>
+            <option>Alfa Romeo</option>
+            <option>Audi</option>
+            <option>BMW</option>
+            <option>Buick</option>
+            <option>Cadillac</option>
+            <option>Chevrolet</option>
+            <option>Chrysler</option>
+            <option>Dodge</option>
+            <option>Ford</option>
+            <option>Genesis</option>
+            <option>GMC</option>
+            <option>Honda</option>
+            <option>Hyundai</option>
+            <option>Infiniti</option>
+            <option>Jeep</option>
+            <option>Kia</option>
+            <option>Land Rover</option>
+            <option>Lexus</option>
+            <option>Lincoln</option>
+            <option>Mazda</option>
+            <option>Mercedes-Benz</option>
+            <option>Mitsubishi</option>
+            <option>Nissan</option>
+            <option>Pontiac</option>
+            <option>Porsche</option>
+            <option>Ram</option>
+            <option>Subaru</option>
+            <option>Tesla</option>
+            <option>Toyota</option>
+            <option>Volkswagen</option>
+            <option>Volvo</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Model</div>
+          <select id="sel-model" onchange="onVehicleInfoChange()" disabled>
+            <option value="">Select model…</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="step1-next" disabled onclick="goStep(2)">Next → Select Panels</button>
+      </div>
     </div>
   </div>
 </div>
@@ -461,7 +531,7 @@ select:focus { outline: none; border-color: #e85d04; }
     <div class="diagram-wrap">
 
       <!-- SVG Car Diagram (top-down view) -->
-      <div class="car-diagram">
+      <div class="car-diagram" id="car-diagram">
         <svg class="car-svg" viewBox="0 0 280 520" xmlns="http://www.w3.org/2000/svg" id="car-svg">
           <defs>
             <filter id="drop" x="-8%" y="-5%" width="116%" height="110%">
@@ -615,6 +685,144 @@ select:focus { outline: none; border-color: #e85d04; }
         </svg>
       </div>
 
+      <!-- SVG Truck Diagram (top-down view, crew cab) -->
+      <div class="car-diagram" id="truck-diagram" style="display:none">
+        <svg class="car-svg" viewBox="0 0 280 520" xmlns="http://www.w3.org/2000/svg">
+
+          <!-- Truck body silhouette: cab wider than bed -->
+          <path d="M 88,14 Q 140,6 192,14 L 218,42 L 238,80 L 240,310 L 215,315 L 215,462 L 202,476 Q 140,484 78,476 L 65,462 L 65,315 L 40,310 L 40,80 L 62,42 Z"
+                fill="url(#bodyGrad)" stroke="#a8bcd0" stroke-width="1.5" filter="url(#drop)"/>
+
+          <!-- ── FRONT BUMPER ── -->
+          <polygon id="pt-front-bumper" class="panel-area"
+            data-panel="Front Bumper"
+            points="88,14 192,14 210,42 70,42"
+            fill="#d0dce8" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('front-bumper','Front Bumper')"/>
+
+          <!-- ── HOOD ── -->
+          <polygon id="pt-hood" class="panel-area"
+            data-panel="Hood"
+            points="70,42 210,42 206,168 74,168"
+            fill="#c8d8e8" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('hood','Hood')"/>
+
+          <!-- ── LEFT FRONT FENDER ── -->
+          <polygon id="pt-lf-fender" class="panel-area"
+            data-panel="Left Front Fender"
+            points="42,80 70,42 74,168 40,155"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('lf-fender','Left Front Fender')"/>
+
+          <!-- ── RIGHT FRONT FENDER ── -->
+          <polygon id="pt-rf-fender" class="panel-area"
+            data-panel="Right Front Fender"
+            points="238,80 210,42 206,168 240,155"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('rf-fender','Right Front Fender')"/>
+
+          <!-- ── WINDSHIELD ── -->
+          <polygon id="pt-windshield" class="panel-area"
+            data-panel="Windshield"
+            points="74,168 206,168 206,192 74,192"
+            fill="url(#glassGrad)" stroke="#a0c0d8" stroke-width="1"
+            onclick="togglePanel('windshield','Windshield')"/>
+
+          <!-- ── CAB ROOF ── -->
+          <polygon id="pt-cab-roof" class="panel-area"
+            data-panel="Cab Roof"
+            points="74,192 206,192 206,310 74,310"
+            fill="#ccd8e6" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('cab-roof','Cab Roof')"/>
+
+          <!-- ── LEFT FRONT DOOR ── -->
+          <polygon id="pt-lf-door" class="panel-area"
+            data-panel="Left Front Door"
+            points="40,192 74,192 74,255 40,255"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('lf-door','Left Front Door')"/>
+
+          <!-- ── RIGHT FRONT DOOR ── -->
+          <polygon id="pt-rf-door" class="panel-area"
+            data-panel="Right Front Door"
+            points="206,192 240,192 240,255 206,255"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('rf-door','Right Front Door')"/>
+
+          <!-- ── LEFT REAR DOOR ── -->
+          <polygon id="pt-lr-door" class="panel-area"
+            data-panel="Left Rear Door"
+            points="40,255 74,255 74,310 40,310"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('lr-door','Left Rear Door')"/>
+
+          <!-- ── RIGHT REAR DOOR ── -->
+          <polygon id="pt-rr-door" class="panel-area"
+            data-panel="Right Rear Door"
+            points="206,255 240,255 240,310 206,310"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('rr-door','Right Rear Door')"/>
+
+          <!-- Cab / bed gap indicator -->
+          <rect x="40" y="311" width="200" height="3" fill="#8099b0" opacity="0.35" pointer-events="none"/>
+
+          <!-- ── LEFT BED SIDE ── -->
+          <polygon id="pt-bed-left" class="panel-area"
+            data-panel="Left Bed Side"
+            points="65,315 97,315 97,462 65,462"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('bed-left','Left Bed Side')"/>
+
+          <!-- ── RIGHT BED SIDE ── -->
+          <polygon id="pt-bed-right" class="panel-area"
+            data-panel="Right Bed Side"
+            points="183,315 215,315 215,462 183,462"
+            fill="#bed0e2" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('bed-right','Right Bed Side')"/>
+
+          <!-- Bed floor (background, not clickable) -->
+          <polygon points="97,315 183,315 183,462 97,462"
+            fill="#c8d8e8" stroke="#a8bcd0" stroke-width="0.5" pointer-events="none"/>
+
+          <!-- ── TAILGATE ── -->
+          <polygon id="pt-tailgate" class="panel-area"
+            data-panel="Tailgate"
+            points="65,462 215,462 202,476 78,476"
+            fill="#d0dce8" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('tailgate','Tailgate')"/>
+
+          <!-- ── REAR BUMPER ── -->
+          <polygon id="pt-rear-bumper" class="panel-area"
+            data-panel="Rear Bumper"
+            points="78,476 202,476 193,490 87,490"
+            fill="#d0dce8" stroke="#a8bcd0" stroke-width="1"
+            onclick="togglePanel('rear-bumper','Rear Bumper')"/>
+
+          <!-- Panel labels -->
+          <g font-family="sans-serif" fill="#7090a8" pointer-events="none">
+            <text x="140" y="31"  text-anchor="middle" font-size="8.5" font-weight="600">FRONT BUMPER</text>
+            <text x="140" y="112" text-anchor="middle" font-size="9"   font-weight="600">HOOD</text>
+            <text x="54"  y="112" text-anchor="middle" font-size="7"   transform="rotate(-6,54,112)">L FENDER</text>
+            <text x="226" y="112" text-anchor="middle" font-size="7"   transform="rotate(6,226,112)">R FENDER</text>
+            <text x="140" y="184" text-anchor="middle" font-size="8">WINDSHIELD</text>
+            <text x="140" y="252" text-anchor="middle" font-size="9"   font-weight="600">CAB ROOF</text>
+            <text x="55"  y="226" text-anchor="middle" font-size="6.5">LF DOOR</text>
+            <text x="225" y="226" text-anchor="middle" font-size="6.5">RF DOOR</text>
+            <text x="55"  y="285" text-anchor="middle" font-size="6.5">LR DOOR</text>
+            <text x="225" y="285" text-anchor="middle" font-size="6.5">RR DOOR</text>
+            <text x="81"  y="390" text-anchor="middle" font-size="7"   transform="rotate(-90,81,390)">L BED SIDE</text>
+            <text x="199" y="390" text-anchor="middle" font-size="7"   transform="rotate(90,199,390)">R BED SIDE</text>
+            <text x="140" y="393" text-anchor="middle" font-size="9"   font-weight="600" fill="#8099b0">BED</text>
+            <text x="140" y="471" text-anchor="middle" font-size="8.5" font-weight="600">TAILGATE</text>
+            <text x="140" y="486" text-anchor="middle" font-size="7">REAR BUMPER</text>
+          </g>
+
+          <!-- Direction indicators -->
+          <text x="140" y="7"   font-family="sans-serif" text-anchor="middle" font-size="8" fill="#b0c4d8">▼ FRONT</text>
+          <text x="140" y="510" font-family="sans-serif" text-anchor="middle" font-size="8" fill="#b0c4d8">▲ REAR</text>
+        </svg>
+      </div>
+
       <!-- Selected panel list -->
       <div class="panel-list-wrap">
         <div class="panel-list-title">Selected Panels</div>
@@ -644,7 +852,7 @@ select:focus { outline: none; border-color: #e85d04; }
 ══════════════════════════════════════ -->
 <div class="step" id="step3">
   <div class="step-title">Describe the damage</div>
-  <div class="step-sub">For each panel, choose damage type and how severe it is.</div>
+  <div class="step-sub">For each panel, how severe is the damage?</div>
   <div class="card">
     <div id="damage-rows"></div>
     <div class="btn-row">
@@ -772,36 +980,116 @@ select:focus { outline: none; border-color: #e85d04; }
 // STATE
 // ──────────────────────────────────────────
 let selectedVehicle = null;
+let selectedYear    = null;
+let selectedMake    = null;
+let selectedModel   = '';
 let selectedPanels  = {}; // { id: { name, type, severity } }
-let estimate        = { min: 0, max: 0 };
+let estimate        = 0;
+
+// Populate year dropdown newest-first
+(function() {
+  const sel = document.getElementById('sel-year');
+  for (let y = 2026; y >= 1985; y--) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    sel.appendChild(o);
+  }
+})();
+
+const MAKE_MODELS = {
+  'Acura':         ['ILX','MDX','RDX','RLX','TLX','ZDX','NSX','TSX','TL','RL','RSX'],
+  'Alfa Romeo':    ['Giulia','Stelvio','4C','Tonale'],
+  'Audi':          ['A3','A4','A5','A6','A7','A8','Q3','Q5','Q7','Q8','TT','R8','e-tron','RS3','RS5','RS6','RS7','S3','S4','S5','S6','S8','SQ5','SQ7','SQ8'],
+  'BMW':           ['1 Series','2 Series','3 Series','4 Series','5 Series','7 Series','8 Series','X1','X2','X3','X4','X5','X6','X7','i3','i4','i5','i7','iX','Z4','M2','M3','M4','M5','M8'],
+  'Buick':         ['Enclave','Encore','Encore GX','Envision','LaCrosse','Regal','Verano'],
+  'Cadillac':      ['CT4','CT5','Escalade','Escalade ESV','XT4','XT5','XT6','Lyriq','CTS','SRX','ATS'],
+  'Chevrolet':     ['Blazer','Bolt EV','Bolt EUV','Camaro','Colorado','Corvette','Equinox','Impala','Malibu','Silverado 1500','Silverado 2500HD','Silverado 3500HD','Spark','Suburban','Tahoe','Trailblazer','Traverse','Trax'],
+  'Chrysler':      ['300','Pacifica','Voyager','200','Town & Country'],
+  'Dodge':         ['Challenger','Charger','Durango','Grand Caravan','Journey','Viper','Dakota'],
+  'Ford':          ['Bronco','Bronco Sport','Edge','Escape','Expedition','Explorer','F-150','F-250','F-350','Fiesta','Focus','Fusion','Maverick','Mustang','Mustang Mach-E','Ranger','Transit','EcoSport'],
+  'Genesis':       ['G70','G80','G90','GV70','GV80'],
+  'GMC':           ['Acadia','Canyon','Sierra 1500','Sierra 2500HD','Sierra 3500HD','Terrain','Yukon','Yukon XL'],
+  'Honda':         ['Accord','Civic','CR-V','CR-Z','Element','Fit','HR-V','Insight','Odyssey','Passport','Pilot','Prologue','Ridgeline'],
+  'Hyundai':       ['Accent','Elantra','IONIQ 5','IONIQ 6','Kona','Palisade','Santa Cruz','Santa Fe','Sonata','Tucson','Veloster','Venue'],
+  'Infiniti':      ['Q50','Q60','Q70','QX50','QX55','QX60','QX80','G35','G37','M37','FX35','FX50'],
+  'Jeep':          ['Cherokee','Compass','Gladiator','Grand Cherokee','Grand Cherokee L','Grand Wagoneer','Renegade','Wagoneer','Wrangler'],
+  'Kia':           ['Carnival','EV6','Forte','K5','Niro','Rio','Seltos','Soul','Sorento','Sportage','Stinger','Telluride'],
+  'Land Rover':    ['Defender','Discovery','Discovery Sport','Range Rover','Range Rover Evoque','Range Rover Sport','Range Rover Velar'],
+  'Lexus':         ['ES','GS','GX','IS','LC','LS','LX','NX','RC','RX','UX','RZ'],
+  'Lincoln':       ['Aviator','Corsair','MKC','MKT','MKX','MKZ','Nautilus','Navigator'],
+  'Mazda':         ['CX-3','CX-30','CX-5','CX-50','CX-60','CX-90','Mazda3','Mazda6','MX-5 Miata','MX-30'],
+  'Mercedes-Benz': ['A-Class','C-Class','CLA','CLS','E-Class','G-Class','GLA','GLB','GLC','GLE','GLS','S-Class','SL','EQB','EQC','EQE','EQS','AMG GT'],
+  'Mitsubishi':    ['Eclipse Cross','Galant','Lancer','Mirage','Outlander','Outlander Sport'],
+  'Nissan':        ['Altima','Armada','Frontier','GT-R','Kicks','Leaf','Maxima','Murano','Pathfinder','Rogue','Rogue Sport','Sentra','Titan','Versa','370Z','350Z'],
+  'Pontiac':       ['G6','Grand Am','Grand Prix','Firebird','GTO','Solstice','Torrent','Vibe'],
+  'Porsche':       ['718 Boxster','718 Cayman','911','Cayenne','Macan','Panamera','Taycan'],
+  'Ram':           ['1500','2500','3500','ProMaster','ProMaster City'],
+  'Subaru':        ['Ascent','BRZ','Crosstrek','Forester','Impreza','Legacy','Outback','WRX'],
+  'Tesla':         ['Model 3','Model S','Model X','Model Y','Cybertruck'],
+  'Toyota':        ['4Runner','Avalon','Camry','Corolla','Crown','GR86','Highlander','Land Cruiser','Prius','RAV4','Sequoia','Sienna','Supra','Tacoma','Tundra','Venza'],
+  'Volkswagen':    ['Arteon','Atlas','Atlas Cross Sport','Golf','GTI','ID.4','Jetta','Passat','Taos','Tiguan'],
+  'Volvo':         ['C40','S60','S90','V60','V90','XC40','XC60','XC90'],
+};
+
+function onMakeChange(make) {
+  selectedMake = make || null;
+  const sel = document.getElementById('sel-model');
+  sel.innerHTML = '<option value="">Select model…</option>';
+  const models = MAKE_MODELS[make] || [];
+  models.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m;
+    sel.appendChild(o);
+  });
+  sel.disabled = !make;
+  selectedModel = '';
+  updateStep1Next();
+}
+
+function onVehicleInfoChange() {
+  selectedYear  = parseInt(document.getElementById('sel-year').value) || null;
+  selectedModel = document.getElementById('sel-model').value.trim();
+  updateStep1Next();
+}
+
+function updateStep1Next() {
+  const ok = selectedVehicle && selectedYear && selectedMake && selectedModel.length > 0;
+  document.getElementById('step1-next').disabled = !ok;
+}
+
+function getYearMult(year) {
+  if (!year)       return 1.00;
+  if (year >= 2023) return 1.20;
+  if (year >= 2018) return 1.10;
+  if (year >= 2010) return 1.00;
+  return 0.90;
+}
 
 // ──────────────────────────────────────────
 // PRICING TABLES
 // ──────────────────────────────────────────
 const PRICES = {
   dent: {
-    light:    { min: 150,  max: 400  },
-    moderate: { min: 400,  max: 950  },
-    severe:   { min: 950,  max: 2200 }
+    light:    { min: 250,  max: 800  },
+    moderate: { min: 400,  max: 1100 }
   },
   paint: {
-    light:    { min: 200,  max: 500  },
-    moderate: { min: 500,  max: 1200 },
-    severe:   { min: 1200, max: 2800 }
+    light:    { min: 300,  max: 900  },
+    moderate: { min: 450,  max: 1300 }
   },
   collision: {
-    light:    { min: 600,  max: 1500 },
-    moderate: { min: 1500, max: 3500 },
-    severe:   { min: 3500, max: 8000 }
+    light:    { min: 1100, max: 2800 },
+    moderate: { min: 1400, max: 3500 }
   },
   glass_chip:    { min: 99,  max: 250 },
   glass_replace: { min: 350, max: 900 },
   rear_glass:    { min: 250, max: 550 }
 };
 
-// Large panels get 1.3× price; bumpers get 0.8×
-const LARGE  = new Set(['hood','roof','trunk']);
-const SMALL  = new Set(['front-bumper','rear-bumper']);
+// Panel size multipliers applied before vehicle multiplier
+const LARGE  = new Set(['hood','roof','trunk','cab-roof','tailgate']);          // 1.3×
+const XTRA   = new Set(['lr-quarter','rr-quarter','bed-left','bed-right']);     // 1.7×
+const SMALL  = new Set(['front-bumper','rear-bumper']);                         // 0.7×
 const GLASS  = new Set(['windshield','rear-window']);
 
 // Vehicle size multiplier
@@ -831,24 +1119,38 @@ function selectVehicle(btn, type) {
   document.querySelectorAll('.vehicle-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   selectedVehicle = type;
-  setTimeout(() => goStep(2), 280);
+
+  document.getElementById('car-diagram').style.display   = type === 'truck' ? 'none' : '';
+  document.getElementById('truck-diagram').style.display = type === 'truck' ? '' : 'none';
+
+  // reset any panels from a prior vehicle selection
+  selectedPanels = {};
+  document.querySelectorAll('.panel-area').forEach(p => p.classList.remove('selected'));
+  renderTags();
+  document.getElementById('step2-next').disabled = true;
+
+  document.getElementById('vehicle-info').classList.add('visible');
+  updateStep1Next();
 }
 
 // ──────────────────────────────────────────
 // STEP 2 — Panel selection
 // ──────────────────────────────────────────
+function getPrefix() { return selectedVehicle === 'truck' ? 'pt' : 'p'; }
+
 function togglePanel(id, name) {
+  const pfx = getPrefix();
   if (selectedPanels[id]) {
     delete selectedPanels[id];
-    document.getElementById('p-' + id).classList.remove('selected');
+    document.getElementById(pfx + '-' + id).classList.remove('selected');
   } else {
     const isGlass = GLASS.has(id);
     selectedPanels[id] = {
       name,
       type:     isGlass ? 'glass_replace' : 'collision',
-      severity: isGlass ? null : 'moderate'
+      severity: isGlass ? null : 'light'
     };
-    document.getElementById('p-' + id).classList.add('selected');
+    document.getElementById(pfx + '-' + id).classList.add('selected');
   }
   renderTags();
   const hasAny = Object.keys(selectedPanels).length > 0;
@@ -857,7 +1159,7 @@ function togglePanel(id, name) {
 
 function removePanel(id) {
   delete selectedPanels[id];
-  const el = document.getElementById('p-' + id);
+  const el = document.getElementById(getPrefix() + '-' + id);
   if (el) el.classList.remove('selected');
   renderTags();
   document.getElementById('step2-next').disabled = Object.keys(selectedPanels).length === 0;
@@ -897,20 +1199,19 @@ function buildDamageRows() {
     const row = document.createElement('div');
     row.className = 'damage-row';
 
-    const typeOpts = isGlass
-      ? `<option value="glass_chip"    ${panel.type==='glass_chip'   ?'selected':''}>Chip / Crack Repair</option>
-         <option value="glass_replace" ${panel.type==='glass_replace'?'selected':''}>Full Replacement</option>`
-      : `<option value="dent"      ${panel.type==='dent'     ?'selected':''}>Dent / Ding</option>
-         <option value="paint"     ${panel.type==='paint'    ?'selected':''}>Paint &amp; Scratch</option>
-         <option value="collision" ${panel.type==='collision'?'selected':''}>Collision Damage</option>`;
-
-    const sevHTML = isGlass ? '' : `
+    const glassOpts = isGlass ? `
+      <div class="field-group">
+        <div class="field-label">Glass Damage</div>
+        <select onchange="setType('${id}',this.value)">
+          <option value="glass_chip"    ${panel.type==='glass_chip'   ?'selected':''}>Chip / Crack Repair</option>
+          <option value="glass_replace" ${panel.type==='glass_replace'?'selected':''}>Full Replacement</option>
+        </select>
+      </div>` : `
       <div class="field-group">
         <div class="field-label">Severity</div>
         <div class="severity-btns">
           <button type="button" class="sev-btn ${panel.severity==='light'   ?'sel-light'   :''}" onclick="setSev('${id}','light',this)">Light</button>
           <button type="button" class="sev-btn ${panel.severity==='moderate'?'sel-moderate':''}" onclick="setSev('${id}','moderate',this)">Moderate</button>
-          <button type="button" class="sev-btn ${panel.severity==='severe'  ?'sel-severe'  :''}" onclick="setSev('${id}','severe',this)">Severe</button>
         </div>
       </div>`;
 
@@ -920,31 +1221,19 @@ function buildDamageRows() {
               background:#e85d04;margin-right:2px;flex-shrink:0;"></span>
         ${panel.name}
       </div>
-      <div class="damage-fields">
-        <div class="field-group">
-          <div class="field-label">Damage Type</div>
-          <select onchange="setType('${id}',this.value,this)">${typeOpts}</select>
-        </div>
-        ${sevHTML}
-      </div>`;
+      <div class="damage-fields">${glassOpts}</div>`;
     container.appendChild(row);
   });
 }
 
-function setType(id, value, el) {
+function setType(id, value) {
   selectedPanels[id].type = value;
-  const isGlass = value.startsWith('glass');
-  const sevGroup = el.closest('.damage-fields').querySelector('.severity-btns');
-  if (sevGroup) {
-    sevGroup.closest('.field-group').style.display = isGlass ? 'none' : '';
-  }
-  if (isGlass) selectedPanels[id].severity = null;
 }
 
 function setSev(id, level, btn) {
   selectedPanels[id].severity = level;
   const allBtns = btn.closest('.severity-btns').querySelectorAll('.sev-btn');
-  allBtns.forEach(b => b.classList.remove('sel-light','sel-moderate','sel-severe'));
+  allBtns.forEach(b => b.classList.remove('sel-light','sel-moderate'));
   btn.classList.add('sel-' + level);
 }
 
@@ -952,9 +1241,11 @@ function setSev(id, level, btn) {
 // ESTIMATE CALCULATION
 // ──────────────────────────────────────────
 function calcAndShow() {
-  const vmult = VMULT[selectedVehicle] || 1.0;
-  const vLabel = { car:'Car / Sedan', truck:'Truck / Pickup', suv:'SUV / Crossover' }[selectedVehicle];
-  let totalMin = 0, totalMax = 0;
+  const vmult  = VMULT[selectedVehicle] || 1.0;
+  const ymult  = getYearMult(selectedYear);
+  const vLabel = [selectedYear, selectedMake, selectedModel].filter(Boolean).join(' ')
+              || { car:'Car / Sedan', truck:'Truck / Pickup', suv:'SUV / Crossover' }[selectedVehicle];
+  let total = 0;
   const rows = [];
 
   Object.entries(selectedPanels).forEach(([id, panel]) => {
@@ -969,31 +1260,30 @@ function calcAndShow() {
       const p = PRICES[panel.type][panel.severity];
       pmin = p.min; pmax = p.max;
       if (LARGE.has(id)) { pmin *= 1.3; pmax *= 1.3; }
-      if (SMALL.has(id)) { pmin *= 0.8; pmax *= 0.8; }
+      if (XTRA.has(id))  { pmin *= 1.7; pmax *= 1.7; }
+      if (SMALL.has(id)) { pmin *= 0.7; pmax *= 0.7; }
     }
 
-    pmin = Math.round(pmin * vmult);
-    pmax = Math.round(pmax * vmult);
-    totalMin += pmin;
-    totalMax += pmax;
+    pmin = Math.round(pmin * vmult * ymult);
+    pmax = Math.round(pmax * vmult * ymult);
+    const pmid = Math.round((pmin + pmax) / 2 / 25) * 25;
+    total += pmid;
 
-    const typeLabel = {
-      dent:'Dent / Ding', paint:'Paint &amp; Scratch', collision:'Collision',
-      glass_chip:'Glass Chip Repair', glass_replace:'Glass Replacement', rear_glass:'Glass Replacement'
-    }[panel.type] || panel.type;
+    const typeLabel = panel.type === 'glass_chip' ? 'Glass Chip Repair'
+                    : panel.type.startsWith('glass') ? 'Glass Replacement'
+                    : 'Collision';
     const sevLabel = panel.severity
       ? ` · ${panel.severity.charAt(0).toUpperCase()+panel.severity.slice(1)}`
       : '';
 
     rows.push({
       label: `${panel.name} — ${typeLabel}${sevLabel}`,
-      range: `$${pmin.toLocaleString()} – $${pmax.toLocaleString()}`
+      range: `$${pmid.toLocaleString()}`
     });
   });
 
-  estimate = { min: totalMin, max: totalMax };
-  document.getElementById('est-range').textContent =
-    `$${totalMin.toLocaleString()} – $${totalMax.toLocaleString()}`;
+  estimate = total;
+  document.getElementById('est-range').textContent = `$${total.toLocaleString()}`;
   document.getElementById('est-vehicle-tag').textContent = vLabel || '';
 
   const bRows = document.getElementById('breakdown-rows');
@@ -1084,7 +1374,7 @@ async function submitLead(e) {
     .map(p => '- ' + p.name + '  (' + p.type.replace(/_/g,' ') + (p.severity ? ', ' + p.severity : '') + ')')
     .join('\n');
   const vLabel = { car:'Car / Sedan', truck:'Truck / Pickup', suv:'SUV / Crossover' }[selectedVehicle] || selectedVehicle;
-  const estStr = '$' + estimate.min.toLocaleString() + ' - $' + estimate.max.toLocaleString();
+  const estStr = '$' + estimate.toLocaleString();
 
   document.getElementById('hd-subject').value  = 'New Estimate Request -- ' + estStr;
   document.getElementById('hd-vtype').value    = vLabel;
@@ -1111,7 +1401,9 @@ async function submitLead(e) {
 function resetAll() {
   selectedVehicle = null;
   selectedPanels  = {};
-  estimate        = { min: 0, max: 0 };
+  estimate        = 0;
+  document.getElementById('car-diagram').style.display   = '';
+  document.getElementById('truck-diagram').style.display = 'none';
 
   document.querySelectorAll('.vehicle-btn').forEach(b => b.classList.remove('selected'));
   document.querySelectorAll('.panel-area').forEach(p => p.classList.remove('selected'));
