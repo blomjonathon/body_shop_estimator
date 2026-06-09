@@ -1285,6 +1285,7 @@ function calcAndShow() {
   estimate = total;
   document.getElementById('est-range').textContent = `$${total.toLocaleString()}`;
   document.getElementById('est-vehicle-tag').textContent = vLabel || '';
+  document.querySelector('#lead-form [name="vehicle"]').value = vLabel || '';
 
   const bRows = document.getElementById('breakdown-rows');
   bRows.innerHTML = '';
