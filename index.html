@@ -114,25 +114,26 @@ body {
 .vehicle-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 20px;
 }
 .vehicle-btn {
   border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 16px;
   background: white;
-  padding: 22px 8px 16px;
+  padding: 0 0 18px;
   cursor: pointer;
   text-align: center;
-  transition: border-color 0.15s, background 0.15s, transform 0.1s;
-  font-size: 0.83rem; font-weight: 700;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s, box-shadow 0.15s;
+  font-size: 1rem; font-weight: 700;
   color: #64748b;
+  overflow: hidden;
 }
-.vehicle-btn:hover { border-color: #e85d04; color: #c2410c; transform: translateY(-2px); }
+.vehicle-btn:hover { border-color: #e85d04; color: #c2410c; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
 .vehicle-btn.selected {
   border-color: #e85d04; background: #fff5f0; color: #c2410c;
   box-shadow: 0 0 0 3px rgba(232,93,4,0.15);
 }
-.vehicle-icon { font-size: 2.4rem; margin-bottom: 8px; display: block; line-height: 1; }
+.vehicle-icon { display: block; margin: 0 0 14px; width: 100%; object-fit: contain; object-position: center; border-radius: 0; background: #f8fafc; }
 
 /* ── Car diagram ── */
 .diagram-wrap {
@@ -410,10 +411,10 @@ input[type=text]::placeholder { color: #94a3b8; }
 /* ── Responsive ── */
 @media (max-width: 520px) {
   .vehicle-grid { gap: 8px; }
-  .vehicle-btn  { padding: 18px 6px 14px; }
-  .vehicle-icon { font-size: 2rem; }
+  .vehicle-btn  { padding: 0 0 12px; }
   .diagram-wrap { flex-direction: column; align-items: center; }
-  .panel-list-wrap { width: 100%; }
+  .panel-list-wrap { width: 100%; text-align: center; }
+  .panel-list-wrap .panel-tag { display: inline-flex; }
   .form-grid  { grid-template-columns: 1fr; }
   .vinfo-grid { grid-template-columns: 1fr; }
   .estimate-range { font-size: 2.4rem; }
@@ -452,13 +453,13 @@ input[type=text]::placeholder { color: #94a3b8; }
   <div class="card">
     <div class="vehicle-grid">
       <button class="vehicle-btn" onclick="selectVehicle(this,'car')">
-        <span class="vehicle-icon">🚗</span>Car / Sedan
+        <img class="vehicle-icon" src="car.png" alt="Car / Sedan">Car / Sedan
       </button>
       <button class="vehicle-btn" onclick="selectVehicle(this,'truck')">
-        <span class="vehicle-icon">🛻</span>Truck / Pickup
+        <img class="vehicle-icon" src="truck.png" alt="Truck / Pickup">Truck / Pickup
       </button>
       <button class="vehicle-btn" onclick="selectVehicle(this,'suv')">
-        <span class="vehicle-icon">🚙</span>SUV / Crossover
+        <img class="vehicle-icon" src="suv.png" alt="SUV / Crossover">SUV / Crossover
       </button>
     </div>
     <div class="vehicle-info" id="vehicle-info">
@@ -920,8 +921,27 @@ input[type=text]::placeholder { color: #94a3b8; }
           </select>
         </div>
         <div class="form-field full">
+          <label style="flex-direction:row; align-items:center; gap:10px; cursor:pointer; font-size:0.9rem; font-weight:600; color:#374151;">
+            <input type="checkbox" id="insurance-toggle" onchange="toggleInsurance(this)"
+              style="width:18px; height:18px; accent-color:#e85d04; cursor:pointer; flex-shrink:0;">
+            I'm filing an insurance claim
+          </label>
+        </div>
+        <div id="insurance-fields" style="display:none; grid-column:1/-1;">
+          <div class="form-grid" style="margin:0;">
+            <div class="form-field">
+              <label>Insurance Company *</label>
+              <input type="text" name="insurance_company" id="ins-company" placeholder="e.g. State Farm">
+            </div>
+            <div class="form-field">
+              <label>Claim Number</label>
+              <input type="text" name="claim_number" id="ins-claim" placeholder="e.g. 12-34567-89">
+            </div>
+          </div>
+        </div>
+        <div class="form-field full">
           <label>Additional notes</label>
-          <textarea name="notes" placeholder="Anything else we should know? (prior repairs, insurance claim, timeframe, etc.)"></textarea>
+          <textarea name="notes" placeholder="Anything else we should know? (timeframe, prior repairs, etc.)"></textarea>
         </div>
       </div>
 
@@ -930,6 +950,7 @@ input[type=text]::placeholder { color: #94a3b8; }
       <input type="hidden" name="vehicle_type"   id="hd-vtype">
       <input type="hidden" name="estimate_range" id="hd-estimate">
       <input type="hidden" name="panels_damaged" id="hd-panels">
+      <input type="hidden" name="insurance"      id="hd-insurance">
 
       <button type="submit" class="btn-submit" id="submit-btn">📩&nbsp; Send My Estimate Request</button>
 
@@ -1283,7 +1304,9 @@ function calcAndShow() {
   });
 
   estimate = total;
-  document.getElementById('est-range').textContent = `$${total.toLocaleString()}`;
+  const estLow  = Math.floor(total / 1000) * 1000;
+  const estHigh = estLow + 1000;
+  document.getElementById('est-range').textContent = `$${estLow.toLocaleString()} – $${estHigh.toLocaleString()}`;
   document.getElementById('est-vehicle-tag').textContent = vLabel || '';
   document.querySelector('#lead-form [name="vehicle"]').value = vLabel || '';
 
@@ -1375,12 +1398,22 @@ async function submitLead(e) {
     .map(p => '- ' + p.name + '  (' + p.type.replace(/_/g,' ') + (p.severity ? ', ' + p.severity : '') + ')')
     .join('\n');
   const vLabel = { car:'Car / Sedan', truck:'Truck / Pickup', suv:'SUV / Crossover' }[selectedVehicle] || selectedVehicle;
-  const estStr = '$' + estimate.toLocaleString();
+  const estLow  = Math.floor(estimate / 1000) * 1000;
+  const estHigh = estLow + 1000;
+  const estStr  = `$${estLow.toLocaleString()} – $${estHigh.toLocaleString()}`;
+
+  const insToggle = document.getElementById('insurance-toggle');
+  const insCompany = document.getElementById('ins-company').value.trim();
+  const insClaim   = document.getElementById('ins-claim').value.trim();
+  const insStr = insToggle.checked
+    ? ('Yes — ' + insCompany + (insClaim ? ', Claim #' + insClaim : ''))
+    : 'No';
 
   document.getElementById('hd-subject').value  = 'New Estimate Request -- ' + estStr;
   document.getElementById('hd-vtype').value    = vLabel;
   document.getElementById('hd-estimate').value = estStr;
   document.getElementById('hd-panels').value   = panelSummary || '(none listed)';
+  document.getElementById('hd-insurance').value = insStr;
 
   btn.disabled    = true;
   btn.textContent = 'Sending...';
@@ -1399,6 +1432,12 @@ async function submitLead(e) {
 // ──────────────────────────────────────────
 // RESET
 // ──────────────────────────────────────────
+function toggleInsurance(cb) {
+  const fields = document.getElementById('insurance-fields');
+  fields.style.display = cb.checked ? 'block' : 'none';
+  document.getElementById('ins-company').required = cb.checked;
+}
+
 function resetAll() {
   selectedVehicle = null;
   selectedPanels  = {};
