@@ -113,7 +113,7 @@ body {
 /* ── Vehicle selector ── */
 .vehicle-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 .vehicle-btn {
@@ -410,7 +410,7 @@ input[type=text]::placeholder { color: #94a3b8; }
 
 /* ── Responsive ── */
 @media (max-width: 520px) {
-  .vehicle-grid { gap: 8px; grid-template-columns: repeat(2, 1fr); }
+  .vehicle-grid { gap: 8px; }
   .vehicle-btn  { padding: 0 0 12px; }
   .diagram-wrap { flex-direction: column; align-items: center; }
   .panel-list-wrap { width: 100%; text-align: center; }
@@ -461,9 +461,6 @@ input[type=text]::placeholder { color: #94a3b8; }
       <button class="vehicle-btn" onclick="selectVehicle(this,'suv')">
         <img class="vehicle-icon" src="suv.png" alt="SUV / Crossover">SUV / Crossover
       </button>
-      <button class="vehicle-btn" onclick="selectVehicle(this,'mini')">
-        <img class="vehicle-icon" src="mini.png" alt="Mini Cooper">Mini Cooper
-      </button>
     </div>
     <div class="vehicle-info" id="vehicle-info">
       <div class="vinfo-grid">
@@ -499,6 +496,7 @@ input[type=text]::placeholder { color: #94a3b8; }
             <option>Lincoln</option>
             <option>Mazda</option>
             <option>Mercedes-Benz</option>
+            <option>MINI</option>
             <option>Mitsubishi</option>
             <option>Nissan</option>
             <option>Pontiac</option>
@@ -1043,6 +1041,7 @@ const MAKE_MODELS = {
   'Lincoln':       ['Aviator','Corsair','MKC','MKT','MKX','MKZ','Nautilus','Navigator'],
   'Mazda':         ['CX-3','CX-30','CX-5','CX-50','CX-60','CX-90','Mazda3','Mazda6','MX-5 Miata','MX-30'],
   'Mercedes-Benz': ['A-Class','C-Class','CLA','CLS','E-Class','G-Class','GLA','GLB','GLC','GLE','GLS','S-Class','SL','EQB','EQC','EQE','EQS','AMG GT'],
+  'MINI':          ['Clubman','Convertible','Countryman','Hardtop 2 Door','Hardtop 4 Door','Paceman','Roadster'],
   'Mitsubishi':    ['Eclipse Cross','Galant','Lancer','Mirage','Outlander','Outlander Sport'],
   'Nissan':        ['Altima','Armada','Frontier','GT-R','Kicks','Leaf','Maxima','Murano','Pathfinder','Rogue','Rogue Sport','Sentra','Titan','Versa','370Z','350Z'],
   'Pontiac':       ['G6','Grand Am','Grand Prix','Firebird','GTO','Solstice','Torrent','Vibe'],
@@ -1117,7 +1116,7 @@ const SMALL  = new Set(['front-bumper','rear-bumper']);                         
 const GLASS  = new Set(['windshield','rear-window']);
 
 // Vehicle size multiplier
-const VMULT  = { car: 1.0, truck: 1.2, suv: 1.15, mini: 0.85 };
+const VMULT  = { car: 1.0, truck: 1.2, suv: 1.15 };
 
 // ──────────────────────────────────────────
 // NAVIGATION
@@ -1268,7 +1267,7 @@ function calcAndShow() {
   const vmult  = VMULT[selectedVehicle] || 1.0;
   const ymult  = getYearMult(selectedYear);
   const vLabel = [selectedYear, selectedMake, selectedModel].filter(Boolean).join(' ')
-              || { car:'Car / Sedan', truck:'Truck / Pickup', suv:'SUV / Crossover', mini:'Mini Cooper' }[selectedVehicle];
+              || { car:'Car / Sedan', truck:'Truck / Pickup', suv:'SUV / Crossover' }[selectedVehicle];
   let total = 0;
   const rows = [];
 
@@ -1399,7 +1398,7 @@ async function submitLead(e) {
   const panelSummary = Object.values(selectedPanels)
     .map(p => '- ' + p.name + '  (' + p.type.replace(/_/g,' ') + (p.severity ? ', ' + p.severity : '') + ')')
     .join('\n');
-  const vLabel = { car:'Car / Sedan', truck:'Truck / Pickup', suv:'SUV / Crossover', mini:'Mini Cooper' }[selectedVehicle] || selectedVehicle;
+  const vLabel = { car:'Car / Sedan', truck:'Truck / Pickup', suv:'SUV / Crossover' }[selectedVehicle] || selectedVehicle;
   const estLow  = Math.floor(estimate / 1000) * 1000;
   const estHigh = estLow + 1000;
   const estStr  = `$${estLow.toLocaleString()} – $${estHigh.toLocaleString()}`;
