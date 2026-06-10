@@ -247,6 +247,7 @@ input[type=text]::placeholder { color: #94a3b8; }
 .sev-btn:hover { border-color: #94a3b8; color: #1a2744; }
 .sev-btn.sel-light    { background: #fef9c3; border-color: #eab308; color: #713f12; }
 .sev-btn.sel-moderate { background: #fed7aa; border-color: #f97316; color: #9a3412; }
+.sev-btn.sel-severe   { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
 
 /* ── Estimate display ── */
 .estimate-hero {
@@ -418,7 +419,8 @@ input[type=text]::placeholder { color: #94a3b8; }
   .form-grid  { grid-template-columns: 1fr; }
   .vinfo-grid { grid-template-columns: 1fr; }
   .estimate-range { font-size: 2.4rem; }
-  .car-svg { width: 400px; }
+  .car-svg { width: 100%; max-width: 340px; }
+  .car-diagram { width: 100%; display: flex; justify-content: center; }
 }
 </style>
 </head>
@@ -874,8 +876,7 @@ input[type=text]::placeholder { color: #94a3b8; }
     <div class="estimate-range" id="est-range">—</div>
     <div id="est-vehicle-tag" class="estimate-vehicle-tag"></div>
     <div class="estimate-caveat">
-      Based on the damage details you provided.<br>
-      Final pricing is confirmed after a shop inspection.
+      This is a general ballpark estimate based on the damage details you provided. Actual repair costs may vary depending on the extent of damage, parts availability, and labor. Final pricing is confirmed after an in-person shop inspection.
     </div>
   </div>
 
@@ -929,6 +930,9 @@ input[type=text]::placeholder { color: #94a3b8; }
           </label>
         </div>
         <div id="insurance-fields" style="display:none; grid-column:1/-1;">
+          <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:8px; padding:12px 14px; margin-bottom:14px; font-size:0.83rem; color:#78350f; line-height:1.55;">
+            <strong>Heads up about insurance estimates:</strong> Insurance companies typically issue an initial estimate that is significantly lower than the actual cost to repair your vehicle. At New Central Auto Body, we work directly with your insurance company to ensure all necessary repairs are properly covered — you won't be left paying the difference.
+          </div>
           <div class="form-grid" style="margin:0;">
             <div class="form-field">
               <label>Insurance Company *</label>
@@ -1094,15 +1098,18 @@ function getYearMult(year) {
 const PRICES = {
   dent: {
     light:    { min: 250,  max: 800  },
-    moderate: { min: 350,  max: 950  }
+    moderate: { min: 350,  max: 950  },
+    severe:   { min: 600,  max: 1400 }
   },
   paint: {
     light:    { min: 300,  max: 900  },
-    moderate: { min: 400,  max: 1050 }
+    moderate: { min: 400,  max: 1050 },
+    severe:   { min: 700,  max: 1600 }
   },
   collision: {
     light:    { min: 1100, max: 2800 },
-    moderate: { min: 1250, max: 3100 }
+    moderate: { min: 1250, max: 3100 },
+    severe:   { min: 2000, max: 4500 }
   },
   glass_chip:    { min: 99,  max: 250 },
   glass_replace: { min: 350, max: 900 },
@@ -1235,6 +1242,7 @@ function buildDamageRows() {
         <div class="severity-btns">
           <button type="button" class="sev-btn ${panel.severity==='light'   ?'sel-light'   :''}" onclick="setSev('${id}','light',this)">Light</button>
           <button type="button" class="sev-btn ${panel.severity==='moderate'?'sel-moderate':''}" onclick="setSev('${id}','moderate',this)">Moderate</button>
+          <button type="button" class="sev-btn ${panel.severity==='severe'  ?'sel-severe'  :''}" onclick="setSev('${id}','severe',this)">Severe</button>
         </div>
       </div>`;
 
@@ -1256,7 +1264,7 @@ function setType(id, value) {
 function setSev(id, level, btn) {
   selectedPanels[id].severity = level;
   const allBtns = btn.closest('.severity-btns').querySelectorAll('.sev-btn');
-  allBtns.forEach(b => b.classList.remove('sel-light','sel-moderate'));
+  allBtns.forEach(b => b.classList.remove('sel-light','sel-moderate','sel-severe'));
   btn.classList.add('sel-' + level);
 }
 
