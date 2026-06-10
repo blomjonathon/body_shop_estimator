@@ -924,7 +924,7 @@ input[type=text]::placeholder { color: #94a3b8; }
           <label style="flex-direction:row; align-items:center; gap:10px; cursor:pointer; font-size:0.9rem; font-weight:600; color:#374151;">
             <input type="checkbox" id="insurance-toggle" onchange="toggleInsurance(this)"
               style="width:18px; height:18px; accent-color:#e85d04; cursor:pointer; flex-shrink:0;">
-            I'm filing an insurance claim
+            I'm filing or have already filed an insurance claim
           </label>
         </div>
         <div id="insurance-fields" style="display:none; grid-column:1/-1;">
@@ -1315,8 +1315,7 @@ function calcAndShow() {
   rows.forEach(r => {
     const d = document.createElement('div');
     d.className = 'breakdown-row';
-    d.innerHTML = `<span class="panel-label">${r.label}</span>
-                   <span class="panel-amt">${r.range}</span>`;
+    d.innerHTML = `<span class="panel-label">${r.label}</span>`;
     bRows.appendChild(d);
   });
 
