@@ -245,6 +245,17 @@ input[type=text]::placeholder { color: #94a3b8; }
   transition: all 0.12s;
 }
 .sev-btn:hover { border-color: #94a3b8; color: #1a2744; }
+.sev-desc {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: #94a3b8;
+  margin-top: 3px;
+  line-height: 1.3;
+}
+.sev-btn.sel-light .sev-desc,
+.sev-btn.sel-moderate .sev-desc,
+.sev-btn.sel-severe .sev-desc { color: inherit; opacity: 0.75; }
 .sev-btn.sel-light    { background: #fef9c3; border-color: #eab308; color: #713f12; }
 .sev-btn.sel-moderate { background: #fed7aa; border-color: #f97316; color: #9a3412; }
 .sev-btn.sel-severe   { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
@@ -664,6 +675,34 @@ input[type=text]::placeholder { color: #94a3b8; }
             fill="#d0dce8" stroke="#a8bcd0" stroke-width="1"
             onclick="togglePanel('rear-bumper','Rear Bumper')"/>
 
+          <!-- ── LEFT HEADLIGHT ── -->
+          <polygon id="p-lf-headlight" class="panel-area"
+            data-panel="Left Headlight"
+            points="70,16 97,14 99,40 70,40"
+            fill="#fef3c7" stroke="#f59e0b" stroke-width="1"
+            onclick="togglePanel('lf-headlight','Left Headlight')"/>
+
+          <!-- ── RIGHT HEADLIGHT ── -->
+          <polygon id="p-rf-headlight" class="panel-area"
+            data-panel="Right Headlight"
+            points="183,14 210,16 210,40 181,40"
+            fill="#fef3c7" stroke="#f59e0b" stroke-width="1"
+            onclick="togglePanel('rf-headlight','Right Headlight')"/>
+
+          <!-- ── LEFT TAILLIGHT ── -->
+          <polygon id="p-l-taillight" class="panel-area"
+            data-panel="Left Taillight"
+            points="43,440 79,456 79,464 43,452"
+            fill="#fee2e2" stroke="#f87171" stroke-width="1"
+            onclick="togglePanel('l-taillight','Left Taillight')"/>
+
+          <!-- ── RIGHT TAILLIGHT ── -->
+          <polygon id="p-r-taillight" class="panel-area"
+            data-panel="Right Taillight"
+            points="201,456 237,440 237,452 201,464"
+            fill="#fee2e2" stroke="#f87171" stroke-width="1"
+            onclick="togglePanel('r-taillight','Right Taillight')"/>
+
           <!-- Panel labels -->
           <g font-family="sans-serif" fill="#7090a8" pointer-events="none">
             <text x="140" y="31"  text-anchor="middle" font-size="8.5" font-weight="600">FRONT BUMPER</text>
@@ -681,6 +720,10 @@ input[type=text]::placeholder { color: #94a3b8; }
             <text x="54"  y="405" text-anchor="middle" font-size="6.5">LR QTR</text>
             <text x="226" y="405" text-anchor="middle" font-size="6.5">RR QTR</text>
             <text x="140" y="471" text-anchor="middle" font-size="8.5" font-weight="600">REAR BUMPER</text>
+            <text x="57"  y="29"  text-anchor="middle" font-size="5.5" fill="#b45309">L HEAD</text>
+            <text x="223" y="29"  text-anchor="middle" font-size="5.5" fill="#b45309">R HEAD</text>
+            <text x="55"  y="452" text-anchor="middle" font-size="5.5" fill="#dc2626">L TAIL</text>
+            <text x="225" y="452" text-anchor="middle" font-size="5.5" fill="#dc2626">R TAIL</text>
           </g>
 
           <!-- Direction indicators -->
@@ -802,6 +845,34 @@ input[type=text]::placeholder { color: #94a3b8; }
             fill="#d0dce8" stroke="#a8bcd0" stroke-width="1"
             onclick="togglePanel('rear-bumper','Rear Bumper')"/>
 
+          <!-- ── LEFT HEADLIGHT ── -->
+          <polygon id="pt-lf-headlight" class="panel-area"
+            data-panel="Left Headlight"
+            points="70,16 97,14 99,40 70,40"
+            fill="#fef3c7" stroke="#f59e0b" stroke-width="1"
+            onclick="togglePanel('lf-headlight','Left Headlight')"/>
+
+          <!-- ── RIGHT HEADLIGHT ── -->
+          <polygon id="pt-rf-headlight" class="panel-area"
+            data-panel="Right Headlight"
+            points="183,14 210,16 210,40 181,40"
+            fill="#fef3c7" stroke="#f59e0b" stroke-width="1"
+            onclick="togglePanel('rf-headlight','Right Headlight')"/>
+
+          <!-- ── LEFT TAILLIGHT ── -->
+          <polygon id="pt-l-taillight" class="panel-area"
+            data-panel="Left Taillight"
+            points="65,440 97,456 97,464 65,462"
+            fill="#fee2e2" stroke="#f87171" stroke-width="1"
+            onclick="togglePanel('l-taillight','Left Taillight')"/>
+
+          <!-- ── RIGHT TAILLIGHT ── -->
+          <polygon id="pt-r-taillight" class="panel-area"
+            data-panel="Right Taillight"
+            points="183,456 215,440 215,462 183,464"
+            fill="#fee2e2" stroke="#f87171" stroke-width="1"
+            onclick="togglePanel('r-taillight','Right Taillight')"/>
+
           <!-- Panel labels -->
           <g font-family="sans-serif" fill="#7090a8" pointer-events="none">
             <text x="140" y="31"  text-anchor="middle" font-size="8.5" font-weight="600">FRONT BUMPER</text>
@@ -819,6 +890,10 @@ input[type=text]::placeholder { color: #94a3b8; }
             <text x="140" y="393" text-anchor="middle" font-size="9"   font-weight="600" fill="#8099b0">BED</text>
             <text x="140" y="471" text-anchor="middle" font-size="8.5" font-weight="600">TAILGATE</text>
             <text x="140" y="486" text-anchor="middle" font-size="7">REAR BUMPER</text>
+            <text x="57"  y="29"  text-anchor="middle" font-size="5.5" fill="#b45309">L HEAD</text>
+            <text x="223" y="29"  text-anchor="middle" font-size="5.5" fill="#b45309">R HEAD</text>
+            <text x="55"  y="452" text-anchor="middle" font-size="5.5" fill="#dc2626">L TAIL</text>
+            <text x="225" y="452" text-anchor="middle" font-size="5.5" fill="#dc2626">R TAIL</text>
           </g>
 
           <!-- Direction indicators -->
@@ -1111,9 +1186,10 @@ const PRICES = {
     moderate: { min: 1250, max: 3100 },
     severe:   { min: 2000, max: 4500 }
   },
-  glass_chip:    { min: 99,  max: 250 },
-  glass_replace: { min: 350, max: 900 },
-  rear_glass:    { min: 250, max: 550 }
+  glass_replace:     { min: 350, max: 900 },
+  rear_glass:        { min: 250, max: 550 },
+  headlight_replace: { min: 300, max: 700 },
+  taillight_replace: { min: 200, max: 550 }
 };
 
 // Panel size multipliers applied before vehicle multiplier
@@ -1121,6 +1197,7 @@ const LARGE  = new Set(['hood','roof','trunk','cab-roof','tailgate']);          
 const XTRA   = new Set(['lr-quarter','rr-quarter','bed-left','bed-right']);     // 1.7×
 const SMALL  = new Set(['front-bumper','rear-bumper']);                         // 0.7×
 const GLASS  = new Set(['windshield','rear-window']);
+const LIGHTS = new Set(['lf-headlight','rf-headlight','l-taillight','r-taillight']);
 
 // Vehicle size multiplier
 const VMULT  = { car: 1.0, truck: 1.2, suv: 1.15 };
@@ -1175,10 +1252,13 @@ function togglePanel(id, name) {
     document.getElementById(pfx + '-' + id).classList.remove('selected');
   } else {
     const isGlass = GLASS.has(id);
+    const isLight = LIGHTS.has(id);
     selectedPanels[id] = {
       name,
-      type:     isGlass ? 'glass_replace' : 'collision',
-      severity: isGlass ? null : 'light'
+      type:     isGlass ? 'glass_replace'
+              : isLight ? (id.includes('headlight') ? 'headlight_replace' : 'taillight_replace')
+              : 'collision',
+      severity: (isGlass || isLight) ? null : 'light'
     };
     document.getElementById(pfx + '-' + id).classList.add('selected');
   }
@@ -1226,23 +1306,21 @@ function buildDamageRows() {
 
   Object.entries(selectedPanels).forEach(([id, panel]) => {
     const isGlass = GLASS.has(id) || (panel.type && panel.type.startsWith('glass'));
+    const isLight = LIGHTS.has(id) || (panel.type && (panel.type.startsWith('headlight') || panel.type.startsWith('taillight')));
     const row = document.createElement('div');
     row.className = 'damage-row';
 
-    const glassOpts = isGlass ? `
+    const glassOpts = (isGlass || isLight) ? `
       <div class="field-group">
-        <div class="field-label">Glass Damage</div>
-        <select onchange="setType('${id}',this.value)">
-          <option value="glass_chip"    ${panel.type==='glass_chip'   ?'selected':''}>Chip / Crack Repair</option>
-          <option value="glass_replace" ${panel.type==='glass_replace'?'selected':''}>Full Replacement</option>
-        </select>
-      </div>` : `
+        <div class="field-label" style="color:#475569;">Full Replacement</div>
+      </div>`
+    : `
       <div class="field-group">
         <div class="field-label">Severity</div>
         <div class="severity-btns">
-          <button type="button" class="sev-btn ${panel.severity==='light'   ?'sel-light'   :''}" onclick="setSev('${id}','light',this)">Light</button>
-          <button type="button" class="sev-btn ${panel.severity==='moderate'?'sel-moderate':''}" onclick="setSev('${id}','moderate',this)">Moderate</button>
-          <button type="button" class="sev-btn ${panel.severity==='severe'  ?'sel-severe'  :''}" onclick="setSev('${id}','severe',this)">Severe</button>
+          <button type="button" class="sev-btn ${panel.severity==='light'   ?'sel-light'   :''}" onclick="setSev('${id}','light',this)">Light<span class="sev-desc">Scratches &amp; cosmetic only, no dents</span></button>
+          <button type="button" class="sev-btn ${panel.severity==='moderate'?'sel-moderate':''}" onclick="setSev('${id}','moderate',this)">Moderate<span class="sev-desc">Visible dents with paint damage</span></button>
+          <button type="button" class="sev-btn ${panel.severity==='severe'  ?'sel-severe'  :''}" onclick="setSev('${id}','severe',this)">Severe<span class="sev-desc">Major dents, creases, or structural damage</span></button>
         </div>
       </div>`;
 
@@ -1282,11 +1360,11 @@ function calcAndShow() {
   Object.entries(selectedPanels).forEach(([id, panel]) => {
     let pmin = 0, pmax = 0;
 
-    if (panel.type === 'glass_chip') {
-      pmin = PRICES.glass_chip.min; pmax = PRICES.glass_chip.max;
-    } else if (panel.type === 'glass_replace') {
+    if (panel.type === 'glass_replace') {
       const k = id === 'windshield' ? 'glass_replace' : 'rear_glass';
       pmin = PRICES[k].min; pmax = PRICES[k].max;
+    } else if (PRICES[panel.type] && !PRICES[panel.type].light) {
+      pmin = PRICES[panel.type].min; pmax = PRICES[panel.type].max;
     } else {
       const p = PRICES[panel.type][panel.severity];
       pmin = p.min; pmax = p.max;
@@ -1300,8 +1378,9 @@ function calcAndShow() {
     const pmid = Math.round((pmin + pmax) / 2 / 25) * 25;
     total += pmid;
 
-    const typeLabel = panel.type === 'glass_chip' ? 'Glass Chip Repair'
-                    : panel.type.startsWith('glass') ? 'Glass Replacement'
+    const typeLabel = panel.type.startsWith('glass')          ? 'Glass Replacement'
+                    : panel.type === 'headlight_replace'   ? 'Headlight Replacement'
+                    : panel.type === 'taillight_replace'   ? 'Taillight Replacement'
                     : 'Collision';
     const sevLabel = panel.severity
       ? ` · ${panel.severity.charAt(0).toUpperCase()+panel.severity.slice(1)}`
@@ -1312,6 +1391,13 @@ function calcAndShow() {
       range: `$${pmid.toLocaleString()}`
     });
   });
+
+  const panelCount = Object.keys(selectedPanels).length;
+  const multiDiscount = panelCount >= 5 ? 0.55
+                      : panelCount >= 3 ? 0.65
+                      : panelCount >= 2 ? 0.78
+                      : 1.0;
+  total = Math.round(total * multiDiscount);
 
   estimate = total;
   const estLow  = Math.floor(total / 1000) * 1000;
